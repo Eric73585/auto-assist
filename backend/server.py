@@ -114,84 +114,72 @@ class SupabaseClient:
 
 supabase = SupabaseClient()
 
-# Initialize sample data
+# Static data for now (since Supabase tables need to be created)
+STATIC_COMPANIES = [
+    {
+        "id": "1",
+        "name": "Maruti Suzuki",
+        "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "India's leading automotive manufacturer offering reliable automatic vehicles"
+    },
+    {
+        "id": "2",
+        "name": "Toyota",
+        "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Global leader in hybrid and automatic transmission technology"
+    },
+    {
+        "id": "3",
+        "name": "Honda",
+        "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Innovative Japanese brand known for efficient automatic transmissions"
+    },
+    {
+        "id": "4",
+        "name": "Hyundai",
+        "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Korean automotive excellence with advanced automatic features"
+    },
+    {
+        "id": "5",
+        "name": "Tata Motors",
+        "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "India's homegrown automotive giant with modern automatic vehicles"
+    }
+]
+
+STATIC_FAQS = [
+    {
+        "id": "1",
+        "question": "Can I use D mode always?",
+        "answer": "Yes, you can drive in D (Drive) mode for most city and highway driving. It automatically shifts gears as needed.",
+        "category": "general"
+    },
+    {
+        "id": "2",
+        "question": "What if I press brake and accelerator together?",
+        "answer": "Never press both pedals simultaneously. This can damage the transmission. The brake will override the accelerator in most modern cars.",
+        "category": "safety"
+    },
+    {
+        "id": "3",
+        "question": "How to park on a slope?",
+        "answer": "Use P (Park) mode and engage the handbrake. For steep slopes, turn wheels away from traffic before parking.",
+        "category": "parking"
+    },
+    {
+        "id": "4",
+        "question": "When should I use L (Low) gear?",
+        "answer": "Use L gear when going down steep hills or for engine braking. It provides better control and reduces brake wear.",
+        "category": "gears"
+    }
+]
+
+STATIC_USERS = {}  # Simple in-memory user storage
+
 async def init_sample_data():
-    try:
-        # Check if data already exists
-        companies = await supabase.select("car_companies")
-        if companies:
-            return
-        
-        # Car companies data
-        car_companies = [
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Maruti Suzuki",
-                "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "description": "India's leading automotive manufacturer offering reliable automatic vehicles"
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Toyota",
-                "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "description": "Global leader in hybrid and automatic transmission technology"
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Honda",
-                "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "description": "Innovative Japanese brand known for efficient automatic transmissions"
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Hyundai",
-                "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "description": "Korean automotive excellence with advanced automatic features"
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Tata Motors",
-                "logo_url": "https://images.unsplash.com/photo-1622788596263-991b12a09eaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHw0fHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "description": "India's homegrown automotive giant with modern automatic vehicles"
-            }
-        ]
-        
-        for company in car_companies:
-            await supabase.insert("car_companies", company)
-        
-        # Sample FAQ data
-        faqs = [
-            {
-                "id": str(uuid.uuid4()),
-                "question": "Can I use D mode always?",
-                "answer": "Yes, you can drive in D (Drive) mode for most city and highway driving. It automatically shifts gears as needed.",
-                "category": "general"
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "question": "What if I press brake and accelerator together?",
-                "answer": "Never press both pedals simultaneously. This can damage the transmission. The brake will override the accelerator in most modern cars.",
-                "category": "safety"
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "question": "How to park on a slope?",
-                "answer": "Use P (Park) mode and engage the handbrake. For steep slopes, turn wheels away from traffic before parking.",
-                "category": "parking"
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "question": "When should I use L (Low) gear?",
-                "answer": "Use L gear when going down steep hills or for engine braking. It provides better control and reduces brake wear.",
-                "category": "gears"
-            }
-        ]
-        
-        for faq in faqs:
-            await supabase.insert("faqs", faq)
-        
-    except Exception as e:
-        logging.error(f"Error initializing sample data: {e}")
+    # Using static data for now
+    logging.info("Using static data - Supabase tables will be created later")
 
 # Routes
 @api_router.get("/")
