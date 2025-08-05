@@ -231,106 +231,125 @@ async def get_companies():
 
 @api_router.get("/companies/{company_id}/cars")
 async def get_cars_by_company(company_id: str):
-    # Find company
-    company = None
-    for comp in STATIC_COMPANIES:
-        if comp["id"] == company_id:
-            company = comp
-            break
-    
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
-    
-    # Sample car models for each company
-    sample_cars = {
-        "1": [  # Maruti
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Swift AMT",
-                "image_url": "https://images.unsplash.com/photo-1637913072630-c863eaa8a271?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwzfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "year_range": "2020-2024",
-                "price_range": "₹6-8 lakhs",
-                "transmission_type": "AMT",
-                "features": ["Auto Gear Shift", "Hill Hold Assist", "ESP", "Dual Airbags"]
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Baleno CVT",
-                "image_url": "https://images.unsplash.com/photo-1534675206212-b6bc629ca261?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwyfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "year_range": "2019-2024",
-                "price_range": "₹7-10 lakhs",
-                "transmission_type": "CVT",
-                "features": ["CVT Transmission", "SmartPlay Infotainment", "LED Headlamps", "Cruise Control"]
+    try:
+        # Get cars from database
+        cars = await supabase.select("car_models", f"company_id=eq.{company_id}")
+        if cars:
+            return cars
+        else:
+            # If no cars in database, return sample data based on company
+            company = None
+            companies = await supabase.select("car_companies", f"id=eq.{company_id}")
+            if not companies:
+                raise HTTPException(status_code=404, detail="Company not found")
+            
+            # Return sample cars for the company
+            sample_cars = {
+                "1": [  # Maruti
+                    {
+                        "id": str(uuid.uuid4()),
+                        "name": "Swift AMT",
+                        "image_url": "https://images.unsplash.com/photo-1637913072630-c863eaa8a271?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwzfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+                        "year_range": "2020-2024",
+                        "price_range": "₹6-8 lakhs",
+                        "transmission_type": "AMT",
+                        "features": ["Auto Gear Shift", "Hill Hold Assist", "ESP", "Dual Airbags"]
+                    },
+                    {
+                        "id": str(uuid.uuid4()),
+                        "name": "Baleno CVT",
+                        "image_url": "https://images.unsplash.com/photo-1534675206212-b6bc629ca261?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwyfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+                        "year_range": "2019-2024",
+                        "price_range": "₹7-10 lakhs",
+                        "transmission_type": "CVT",
+                        "features": ["CVT Transmission", "SmartPlay Infotainment", "LED Headlamps", "Cruise Control"]
+                    }
+                ],
+                "2": [  # Toyota
+                    {
+                        "id": str(uuid.uuid4()),
+                        "name": "Innova Crysta AT",
+                        "image_url": "https://images.unsplash.com/photo-1606128031531-52ae98c9707a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+                        "year_range": "2018-2024",
+                        "price_range": "₹18-25 lakhs",
+                        "transmission_type": "Torque Converter AT",
+                        "features": ["6-Speed Automatic", "7-Seater", "Diesel Engine", "Premium Interior"]
+                    }
+                ],
+                "default": [
+                    {
+                        "id": str(uuid.uuid4()),
+                        "name": "Sample Automatic Car",
+                        "image_url": "https://images.unsplash.com/photo-1606128031531-52ae98c9707a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+                        "year_range": "2020-2024",
+                        "price_range": "₹8-12 lakhs",
+                        "transmission_type": "Automatic",
+                        "features": ["Automatic Transmission", "Power Steering", "AC", "Safety Features"]
+                    }
+                ]
             }
-        ],
-        "2": [  # Toyota
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Innova Crysta AT",
-                "image_url": "https://images.unsplash.com/photo-1606128031531-52ae98c9707a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "year_range": "2018-2024",
-                "price_range": "₹18-25 lakhs",
-                "transmission_type": "Torque Converter AT",
-                "features": ["6-Speed Automatic", "7-Seater", "Diesel Engine", "Premium Interior"]
-            }
-        ],
-        "default": [
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Sample Automatic Car",
-                "image_url": "https://images.unsplash.com/photo-1606128031531-52ae98c9707a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
-                "year_range": "2020-2024",
-                "price_range": "₹8-12 lakhs",
-                "transmission_type": "Automatic",
-                "features": ["Automatic Transmission", "Power Steering", "AC", "Safety Features"]
-            }
-        ]
-    }
-    
-    return sample_cars.get(company_id, sample_cars["default"])
+            return sample_cars.get(company_id, sample_cars["default"])
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching cars: {str(e)}")
 
 @api_router.get("/cars/{car_id}/components")
 async def get_car_components(car_id: str):
-    # Sample components for automatic cars
-    components = [
-        {
-            "id": str(uuid.uuid4()),
-            "name": "Gear Selector (PRNDL)",
-            "description": "The gear selector allows you to choose different driving modes",
-            "usage_instructions": "P - Park (for parking), R - Reverse, N - Neutral, D - Drive, L - Low gear",
-            "when_to_use": "Use P when parked, R for backing up, D for normal driving, L for hills",
-            "image_url": "https://images.unsplash.com/photo-1606128031531-52ae98c9707a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85"
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "name": "Automatic Braking System (ABS)",
-            "description": "Prevents wheel lockup during emergency braking",
-            "usage_instructions": "Press brake pedal firmly in emergency. System automatically prevents skidding",
-            "when_to_use": "Activated automatically during hard braking situations",
-            "image_url": "https://images.unsplash.com/photo-1533630217389-3a5e4dff5683?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxjYXIlMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzU0Mzc2MTk3fDA&ixlib=rb-4.1.0&q=85"
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "name": "Infotainment System",
-            "description": "Central control for entertainment, navigation, and vehicle settings",
-            "usage_instructions": "Touch screen interface for music, maps, and car settings",
-            "when_to_use": "Use while parked or let passenger operate while driving",
-            "image_url": "https://images.unsplash.com/photo-1615153633779-5c932c7f4cad?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHw0fHxjYXIlMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzU0Mzc2MTk3fDA&ixlib=rb-4.1.0&q=85"
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "name": "Cruise Control",
-            "description": "Maintains constant speed without keeping foot on accelerator",
-            "usage_instructions": "Set desired speed, press cruise control button to activate",
-            "when_to_use": "Use on highways for comfortable long-distance driving",
-            "image_url": "https://images.unsplash.com/photo-1585014165903-6d6c6ebad3e9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwyfHxjYXIlMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzU0Mzc2MTk3fDA&ixlib=rb-4.1.0&q=85"
-        }
-    ]
-    return components
+    try:
+        # Try to get components from database first
+        components = await supabase.select("components", f"car_model_id=eq.{car_id}")
+        if components:
+            return components
+        else:
+            # Return sample components for any car
+            sample_components = [
+                {
+                    "id": str(uuid.uuid4()),
+                    "name": "Gear Selector (PRNDL)",
+                    "description": "The gear selector allows you to choose different driving modes",
+                    "usage_instructions": "P - Park (for parking), R - Reverse, N - Neutral, D - Drive, L - Low gear",
+                    "when_to_use": "Use P when parked, R for backing up, D for normal driving, L for hills",
+                    "image_url": "https://images.unsplash.com/photo-1606128031531-52ae98c9707a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85"
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "name": "Automatic Braking System (ABS)",
+                    "description": "Prevents wheel lockup during emergency braking",
+                    "usage_instructions": "Press brake pedal firmly in emergency. System automatically prevents skidding",
+                    "when_to_use": "Activated automatically during hard braking situations",
+                    "image_url": "https://images.unsplash.com/photo-1533630217389-3a5e4dff5683?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxjYXIlMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzU0Mzc2MTk3fDA&ixlib=rb-4.1.0&q=85"
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "name": "Infotainment System",
+                    "description": "Central control for entertainment, navigation, and vehicle settings",
+                    "usage_instructions": "Touch screen interface for music, maps, and car settings",
+                    "when_to_use": "Use while parked or let passenger operate while driving",
+                    "image_url": "https://images.unsplash.com/photo-1615153633779-5c932c7f4cad?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHw0fHxjYXIlMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzU0Mzc2MTk3fDA&ixlib=rb-4.1.0&q=85"
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "name": "Cruise Control",
+                    "description": "Maintains constant speed without keeping foot on accelerator",
+                    "usage_instructions": "Set desired speed, press cruise control button to activate",
+                    "when_to_use": "Use on highways for comfortable long-distance driving",
+                    "image_url": "https://images.unsplash.com/photo-1585014165903-6d6c6ebad3e9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwyfHxjYXIlMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzU0Mzc2MTk3fDA&ixlib=rb-4.1.0&q=85"
+                }
+            ]
+            return sample_components
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching components: {str(e)}")
 
 @api_router.get("/faqs")
 async def get_faqs():
-    return STATIC_FAQS
+    try:
+        faqs = await supabase.select("faqs")
+        return faqs
+    except Exception as e:
+        # Fallback to static data if database fails
+        logging.warning(f"Database error, using static FAQ data: {e}")
+        return STATIC_FAQS
 
 @api_router.get("/contact")
 async def get_contact_info():
