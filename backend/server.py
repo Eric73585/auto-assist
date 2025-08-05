@@ -188,26 +188,28 @@ async def root():
 
 @api_router.post("/register")
 async def register(user: UserCreate):
+    # Check if user already exists
+    if user.username in STATIC_USERS:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
     user_data = {
         "id": str(uuid.uuid4()),
         "username": user.username,
         "password": user.password,  # In production, hash this password
         "created_at": datetime.utcnow().isoformat()
     }
-    result = await supabase.insert("users", user_data)
+    STATIC_USERS[user.username] = user_data
     return {"message": "User registered successfully", "user_id": user_data["id"]}
 
 @api_router.post("/login")
 async def login(user: UserLogin):
-    users = await supabase.select("users", f"username=eq.{user.username}&password=eq.{user.password}")
-    if not users:
+    if user.username not in STATIC_USERS or STATIC_USERS[user.username]["password"] != user.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {"message": "Login successful", "user": users[0]}
+    return {"message": "Login successful", "user": STATIC_USERS[user.username]}
 
 @api_router.get("/companies")
 async def get_companies():
-    companies = await supabase.select("car_companies")
-    return companies
+    return STATIC_COMPANIES
 
 @api_router.get("/companies/{company_id}/cars")
 async def get_cars_by_company(company_id: str):
