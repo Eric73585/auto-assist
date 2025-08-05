@@ -213,9 +213,19 @@ async def get_companies():
 
 @api_router.get("/companies/{company_id}/cars")
 async def get_cars_by_company(company_id: str):
+    # Find company
+    company = None
+    for comp in STATIC_COMPANIES:
+        if comp["id"] == company_id:
+            company = comp
+            break
+    
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
     # Sample car models for each company
     sample_cars = {
-        "maruti": [
+        "1": [  # Maruti
             {
                 "id": str(uuid.uuid4()),
                 "name": "Swift AMT",
@@ -235,6 +245,17 @@ async def get_cars_by_company(company_id: str):
                 "features": ["CVT Transmission", "SmartPlay Infotainment", "LED Headlamps", "Cruise Control"]
             }
         ],
+        "2": [  # Toyota
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Innova Crysta AT",
+                "image_url": "https://images.unsplash.com/photo-1606128031531-52ae98c9707a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aWMlMjBjYXJ8ZW58MHx8fHwxNzU0Mzc2MTkwfDA&ixlib=rb-4.1.0&q=85",
+                "year_range": "2018-2024",
+                "price_range": "₹18-25 lakhs",
+                "transmission_type": "Torque Converter AT",
+                "features": ["6-Speed Automatic", "7-Seater", "Diesel Engine", "Premium Interior"]
+            }
+        ],
         "default": [
             {
                 "id": str(uuid.uuid4()),
@@ -248,16 +269,7 @@ async def get_cars_by_company(company_id: str):
         ]
     }
     
-    # Get company name to determine which cars to return
-    companies = await supabase.select("car_companies", f"id=eq.{company_id}")
-    if not companies:
-        raise HTTPException(status_code=404, detail="Company not found")
-    
-    company_name = companies[0]["name"].lower()
-    if "maruti" in company_name:
-        return sample_cars["maruti"]
-    else:
-        return sample_cars["default"]
+    return sample_cars.get(company_id, sample_cars["default"])
 
 @api_router.get("/cars/{car_id}/components")
 async def get_car_components(car_id: str):
