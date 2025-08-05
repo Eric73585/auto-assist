@@ -312,8 +312,7 @@ async def get_car_components(car_id: str):
 
 @api_router.get("/faqs")
 async def get_faqs():
-    faqs = await supabase.select("faqs")
-    return faqs
+    return STATIC_FAQS
 
 @api_router.get("/contact")
 async def get_contact_info():
